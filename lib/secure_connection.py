@@ -1,7 +1,7 @@
 import socket
 import ssl
 
-from connection import Connection
+from .connection import Connection
 
 
 class SecureConnection(Connection):
