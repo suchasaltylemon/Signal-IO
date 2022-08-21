@@ -5,11 +5,6 @@ s = SecureServer("0.0.0.0", 7777)
 usernames = {}
 
 
-@s.Started()
-def started():
-    print("Started")
-
-
 @s.Connected()
 def h(conn):
     print("Server")

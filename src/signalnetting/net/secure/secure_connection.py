@@ -31,14 +31,16 @@ class SecureConnection(Connection):
             assert self.secure, "SecureSocket has not completed handshake. Cannot send secure packets!"
 
             decrypted_encoded_data = self.aes.decrypt(sbytes(decoded_signal.data["data"]))
+            path = decoded_signal.path.lstrip(self.SECURE_PREFIX)
 
             decoded_data = bstring(decrypted_encoded_data)
             data = self._decode_data(decoded_data)
 
         else:
+            path = decoded_signal.path
             data = decoded_signal.data
 
-        return Signal(decoded_signal.path, data)
+        return Signal(path, data)
 
     def send(self, signal: Signal, /, use_secure=True):
         path = signal.path
@@ -52,8 +54,6 @@ class SecureConnection(Connection):
             encoded_internal_data = sbytes(self._encode_data(signal.data))
             encrypted_data = self.aes.encrypt(encoded_internal_data)
             encoded_external_data = bstring(encrypted_data)
-
-            print(encoded_external_data)
 
             data = {"data": encoded_external_data}
 

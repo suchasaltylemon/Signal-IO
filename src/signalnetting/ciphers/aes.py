@@ -14,12 +14,13 @@ class AESCipher:
         self.block_size = AES.block_size
 
         self.key = None
+        self.raw_key = None
         if key is not None:
             self.set_key(key)
 
     def set_key(self, key: bytes):
         self.key = hashlib.sha256(key).digest()
-        print(self.key)
+        self.raw_key = key
 
     def encrypt(self, data: bytes):
         padded_data = pad(data, self.block_size)
@@ -42,4 +43,6 @@ class AESCipher:
 
     @staticmethod
     def generate_key():
-        return Random.new().read(SESSION_KEY_SIZE)
+        key = Random.new().read(SESSION_KEY_SIZE)
+
+        return key

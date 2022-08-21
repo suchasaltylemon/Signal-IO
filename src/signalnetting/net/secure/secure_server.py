@@ -28,8 +28,6 @@ class SecureServer(Server):
 
             decrypted_session_key = self.rsa.decrypt(encrypted_session_key)
 
-            print(decrypted_session_key)
-
             aes.set_key(decrypted_session_key)
             connection.secure = True
             connection.Secured.fire()
@@ -43,12 +41,7 @@ class SecureServer(Server):
         connection.listen()
 
         self._handshake(connection, aes)
-
         self._connections.append(connection)
-
-        connection.Signalled.wait()
-
-        # TODO: fix handshake
 
         connection.Disconnected.connect(lambda: self.Disconnected.fire(connection))
 

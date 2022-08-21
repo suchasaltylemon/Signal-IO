@@ -23,17 +23,13 @@ class SecureClient(Client):
 
             rsa_cipher = RSACipher(public_key)
 
-            print(self.aes.key)
-
-            # TODO: Fix key mismatch
-
-            encrypted_session_key = rsa_cipher.encrypt(self.aes.key)
+            encrypted_session_key = rsa_cipher.encrypt(self.aes.raw_key)
             self._connection.send(HandshakeSessionKeyExchange.create_handshake(encrypted_session_key), use_secure=False)
 
         @self._connection.Signalled(HandshakeResolve.path)
         def resolve(signal):
             server_hash = sbytes(signal.data["hash"])
-            client_hash = SecureConnection.hash(self.aes.key)
+            client_hash = SecureConnection.hash(self.aes.raw_key)
 
             if server_hash == client_hash:
                 self._connection.secure = True

@@ -1,5 +1,6 @@
-from threading import Thread, _active
 from ctypes import pythonapi, py_object
+from threading import Thread, _active
+
 
 class Parallel(Thread):
     def __init__(self, callback):
