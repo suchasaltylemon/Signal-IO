@@ -1,9 +1,9 @@
 import socket
 from typing import List, Any, Optional
 
-from signalnetting.utils.event import Event
-from signalnetting.utils.parallel import Parallel
 from .connection import Connection
+from ..utils.event import Event
+from ..utils.parallel import Parallel
 
 
 class Server:

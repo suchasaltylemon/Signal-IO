@@ -1,4 +1,4 @@
-from signalnetting import Signal, SecureClient, SecureServer
+from signalio import Signal, SecureClient, SecureServer
 
 s = SecureServer("0.0.0.0", 7777)
 
