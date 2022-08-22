@@ -1,8 +1,8 @@
 from threading import Event as Waiter
-from types import FunctionType
-from typing import TypeVar, Callable, Generic
+from typing import TypeVar, Callable, Generic, Optional, Any, TypeAlias
 
 T = TypeVar("T")
+F: TypeAlias = Callable[[T], None]
 
 
 class Event(Generic[T]):
@@ -11,7 +11,7 @@ class Event(Generic[T]):
         self._waiters = []
         self._waiter_return = None
 
-    def __call__(self, fn: Callable[[T], None] = None) -> Callable[[T], None]:
+    def __call__(self, fn: Optional[F] = None) -> Callable[[F], F]:
         return self.connect(fn)
 
     def fire(self, *args: T):
@@ -24,11 +24,11 @@ class Event(Generic[T]):
 
         self._waiters = []
 
-    def connect(self, fn=None):
+    def connect(self, fn: Optional[Callable[[T], None]] = None) -> Callable[[F], F]:
         if fn is None:
-            def decorator(fn: Callable[[T], None]):
-                self._callbacks.append(fn)
-                return fn
+            def decorator(fnx: F) -> F:
+                self._callbacks.append(fnx)
+                return fnx
 
             return decorator
 
@@ -46,7 +46,7 @@ class Event(Generic[T]):
         return self._waiter_return
 
 
-class ConditionalEvent(Event):
+class ConditionalEvent(Event, Generic[T]):
     def __init__(self, checker, default=None):
         super().__init__()
 
@@ -55,7 +55,7 @@ class ConditionalEvent(Event):
         self._waiters = {}
         self._conditioner = checker
 
-    def __call__(self, condition=None):
+    def __call__(self, condition=None) -> Callable[[T], None]:
         if condition is None:
             condition = self._default
 
@@ -74,11 +74,12 @@ class ConditionalEvent(Event):
                 waiter.set()
                 self._waiter_return = None
 
-    def connect(self, condition=None):
+    def connect(self, condition: Optional[Callable[[Any], bool]] = None) -> Callable[
+        [Callable[[T], None]], Callable[[T], None]]:
         if condition is None:
             condition = self._default
 
-        def _handle_connect(fn: FunctionType):
+        def _handle_connect(fn: Callable[[T], Callable[[T], None]]):
             self._callbacks[condition] = fn
 
             return fn

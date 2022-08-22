@@ -13,10 +13,10 @@ class Server:
         self.IP = socket.gethostbyname(host_name)
         self.Port = port
 
-        self.Connected = Event()
-        self.Disconnected = Event()
-        self.Stopped = Event()
-        self.Started = Event()
+        self.Connected = Event[Connection]()
+        self.Disconnected = Event[Connection]()
+        self.Stopped = Event[None]()
+        self.Started = Event[None]()
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._connections: List[Connection] = []

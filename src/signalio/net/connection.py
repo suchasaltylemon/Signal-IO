@@ -19,8 +19,8 @@ class Connection:
         self.ip, self.port = sock.getpeername()
         self._socket = sock
 
-        self.Signalled = ConditionalEvent(lambda signal: [signal.path], default="*")
-        self.Disconnected = Event()
+        self.Signalled = ConditionalEvent(lambda signal: [signal.path, "*"], default="*")
+        self.Disconnected = Event[None]()
 
         self.connected = False
         self._event_loop = Parallel(self._listen)

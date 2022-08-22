@@ -64,5 +64,3 @@ def handle_connection(conn):
 
 
 c.connect()
-
-# print(get_host())
