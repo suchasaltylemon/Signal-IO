@@ -1,8 +1,9 @@
-from threading import Event as Waiter
-from typing import TypeVar, Callable, Generic, Optional, Any, TypeAlias
+import time
+from threading import Event as Waiter, Thread
+from typing import TypeVar, Callable, Generic, Optional, Any
 
 T = TypeVar("T")
-F: TypeAlias = Callable[[T], None]
+F = Callable[[T], None]
 
 
 class Event(Generic[T]):
@@ -36,14 +37,32 @@ class Event(Generic[T]):
             self._callbacks.append(fn)
             return fn
 
-    def wait(self):
+    def _timeout(self, time_out: float, waiter: Waiter):
+        time.sleep(time_out)
+
+        if not waiter.is_set():
+            waiter.set()
+
+    def _wait_handler(self, waiter: Waiter, time_out: Optional[float]):
+        started = time.time()
+        if time_out is not None:
+            Thread(target=self._timeout, args=(time_out, waiter)).start()
+
+        waiter.wait()
+        finished = time.time()
+
+        if time_out is not None and finished - started > time_out:
+            return self._waiter_return
+
+        else:
+            return None
+
+    def wait(self, *, time_out: Optional[float] = None):
         w = Waiter()
 
         self._waiters.append(w)
 
-        w.wait()
-
-        return self._waiter_return
+        return self._wait_handler(w, time_out)
 
 
 class ConditionalEvent(Event, Generic[T]):
@@ -68,7 +87,7 @@ class ConditionalEvent(Event, Generic[T]):
             if condition in target_condition:
                 callback(*args)
 
-        for condition, waiter in self._waiters:
+        for condition, waiter in self._waiters.items():
             if condition in target_condition:
                 self._waiter_return = args
                 waiter.set()
@@ -86,7 +105,7 @@ class ConditionalEvent(Event, Generic[T]):
 
         return _handle_connect
 
-    def wait(self, condition):
+    def wait(self, condition, *, time_out: Optional[float] = None):
         w = Waiter()
 
         if condition in self._waiters:
@@ -95,6 +114,4 @@ class ConditionalEvent(Event, Generic[T]):
         else:
             self._waiters[condition] = [w]
 
-        w.wait()
-
-        return self._waiter_return
+        return self._wait_handler(w, time_out)

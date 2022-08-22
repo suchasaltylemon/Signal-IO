@@ -1,4 +1,4 @@
-from signalio import Signal, SecureClient, SecureServer
+from signalio import Signal, SecureClient, SecureServer, SecureConnection
 
 s = SecureServer("0.0.0.0", 7777)
 
@@ -6,9 +6,7 @@ usernames = {}
 
 
 @s.Connected()
-def h(conn):
-    print("Server")
-
+def h(conn: SecureConnection):
     @conn.Signalled("/username/set")
     def set_username(signal):
         username = signal.data["username"]
