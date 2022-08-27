@@ -27,7 +27,7 @@ class Event(Generic[T]):
 
     def fire(self, *args: T):
         for callback in self._callbacks:
-            self._queue.put((callback, args))
+            Thread(target=callback, args=args).start()
 
         for w in self._waiters:
             self._waiter_return = args
@@ -61,7 +61,10 @@ class Event(Generic[T]):
         waiter.wait()
         finished = time.time()
 
-        if time_out is not None and finished - started > time_out:
+        if time_out is not None and finished - started <= time_out:
+            return self._waiter_return
+
+        elif time_out is None:
             return self._waiter_return
 
         else:
@@ -95,7 +98,7 @@ class ConditionalEvent(Event, Generic[T]):
 
         for condition, callback in self._callbacks.items():
             if condition in target_condition:
-                self._queue.put((callback, args))
+                Thread(target=callback, args=args).start()
 
         for condition, waiter in self._waiters.items():
             if condition in target_condition:
