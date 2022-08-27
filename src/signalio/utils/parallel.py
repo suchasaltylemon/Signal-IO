@@ -9,11 +9,7 @@ class Parallel(Thread):
         self._callback = callback
 
     def run(self):
-        try:
-            self._callback()
-
-        finally:
-            return
+        self._callback()
 
     def get_id(self):
         if hasattr(self, "_thread_id"):
