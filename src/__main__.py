@@ -1,8 +1,8 @@
 from signalio import Signal, SecureClient, SecureServer, SecureConnection
 
-do_server = input("Server? ") == "y"
+choice = input("Server? ")
 
-if do_server:
+if choice == "y" or choice == "b":
     s = SecureServer("0.0.0.0", 7777)
 
     usernames = {}
@@ -10,6 +10,10 @@ if do_server:
 
     @s.Connected()
     def h(conn: SecureConnection):
+        @conn.Signalled("example")
+        def example():
+            print("It worked")
+
         @conn.Signalled("/username/set")
         def set_username(signal):
             username = signal.data["username"]
@@ -33,7 +37,7 @@ if do_server:
 
     s.start()
 
-else:
+if choice == "n" or choice == "b":
 
     c = SecureClient("127.0.0.1", 7777)
 
@@ -44,6 +48,7 @@ else:
             conn.Secured.wait()
 
         print("Connected")
+        conn.send(Signal("example"))
 
         username = input("Enter username: ")
 
